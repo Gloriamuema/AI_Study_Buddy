@@ -61,4 +61,6 @@ CREATE INDEX idx_session_id ON flashcards(session_id);
 CREATE INDEX idx_flashcard_id ON study_progress(flashcard_id);
 CREATE INDEX idx_user_feedback ON feedback(user_id);
 CREATE INDEX idx_session_feedback ON feedback(session_id);
+-- --- IGNORE ---
+-- End of mysql_queries.sql
 
