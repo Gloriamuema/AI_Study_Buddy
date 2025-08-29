@@ -44,23 +44,4 @@ CREATE TABLE study_progress (
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (flashcard_id) REFERENCES flashcards(id)
 );
--- Feedback table
-CREATE TABLE feedback (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT,
-    session_id INT,
-    comments TEXT,
-    rating INT CHECK (rating BETWEEN 1 AND 5),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (session_id) REFERENCES study_sessions(id)
-);
--- Indexes for performance optimization
-CREATE INDEX idx_user_id ON study_sessions(user_id);
-CREATE INDEX idx_session_id ON flashcards(session_id);
-CREATE INDEX idx_flashcard_id ON study_progress(flashcard_id);
-CREATE INDEX idx_user_feedback ON feedback(user_id);
-CREATE INDEX idx_session_feedback ON feedback(session_id);
--- --- IGNORE ---
--- End of mysql_queries.sql
 
