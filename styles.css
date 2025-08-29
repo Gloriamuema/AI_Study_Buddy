@@ -176,3 +176,18 @@ textarea {
 .section {
     animation: fadeIn 0.5s ease-out;
 }
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .gradient-text {
+        font-size: 2rem;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+
+    .flashcard {
+        height: 250px;
+    }
+}
