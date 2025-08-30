@@ -2,8 +2,10 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import mysql.connector
+from mysql.connector import Error
 import requests
 import os
+
 
 app = Flask(__name__)
 CORS(app)
@@ -11,10 +13,32 @@ CORS(app)
 # Database configuration
 DB_CONFIG = {
     'host': 'localhost',
-    'user': 'your_username',
-    'password': 'your_password',
+    'user': 'root',
+    'password': '1234',
     'database': 'ai_study_buddy'
 }
+
+
+
+# db_config = {
+  #  "host": "localhost",
+    #"user": "your_mysql_username",
+    #"password": "your_mysql_password",
+    #"database": "ai_study_buddy"
+#}
+#db = mysql.connector.connect(**DB_CONFIG)
+#cursor = db.cursor(dictionary=True)
+#def save_study_session(notes, flashcards):
+    #cursor.execute("INSERT INTO study_sessions (notes) VALUES (%s)", (notes,))
+    #session_id = cursor.lastrowid
+    #for card in flashcards:
+        #cursor.execute(
+           # "INSERT INTO flashcards (session_id, question, answer) VALUES (%s, %s, %s)",
+           # (session_id, card['question'], card['answer'])
+        #)
+    #db.commit()
+   # return session_id
+
 
 # Hugging Face API configuration
 HF_API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
@@ -68,3 +92,20 @@ def generate_with_huggingface(text):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+# Additional Flask routes
+@app.route('/api/sessions', methods=['GET'])
+def get_user_sessions():
+    # Return user's study sessions
+    pass
+
+@app.route('/api/sessions/<int:session_id>/flashcards', methods=['GET'])
+def get_session_flashcards(session_id):
+    # Return flashcards for a specific session
+    pass
+
+@app.route('/api/progress', methods=['POST'])
+def save_progress():
+    # Save user's study progress
+    pass
