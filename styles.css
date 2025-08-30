@@ -177,34 +177,9 @@ textarea {
     animation: fadeIn 0.5s ease-out;
 }
 
-/* Responsive Design */
-@media (max-width: 600px) {
-    .gradient-text {
-        font-size: 2rem;
-    }
-
-    .card {
-        padding: 1rem;
-    }
-
-    .flashcard {
-        height: 250px;
-    }
-    .primary-btn {
-        font-size: 1rem;
-        padding: 0.75rem 1.5rem;
-    }
-
-    textarea {
-        min-height: 150px;
-    }
-
-    .action-buttons {
-        flex-direction: column;
-    }
-    
-    .action-buttons button {
-        width: 100%;
-    }
-
+.footer {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
 }
