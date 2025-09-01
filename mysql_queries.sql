@@ -39,6 +39,8 @@ JOIN study_notes s ON f.note_id = s.id;
 UPDATE flashcards SET is_correct = TRUE WHERE id = 1;
 UPDATE flashcards SET is_correct = FALSE WHERE id = 2;
 UPDATE flashcards SET is_correct = TRUE WHERE id = 3;
+
+
 -- ✅ Query to see updated flashcards with user responses
 SELECT * FROM flashcards;
 -- ✅ Query to delete a study note and its associated flashcards
