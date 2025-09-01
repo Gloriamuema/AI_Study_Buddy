@@ -1,47 +1,46 @@
--- Create the database
-CREATE DATABASE IF NOT EXISTS ai_study_buddy;
+CREATE DATABASE ai_study_buddy;
 USE ai_study_buddy;
 
--- Table for storing user notes
-CREATE TABLE IF NOT EXISTS study_notes (
+CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    notes TEXT NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    is_premium BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table for storing generated flashcards
-CREATE TABLE IF NOT EXISTS flashcards (
+CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    note_id INT,                          -- link flashcard to study_notes
-    question TEXT NOT NULL,
-    answer TEXT NOT NULL,
-    is_correct BOOLEAN DEFAULT NULL,      -- track if user answered correctly
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (note_id) REFERENCES study_notes(id) ON DELETE CASCADE
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    is_premium BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ✅ Insert sample study notes
-INSERT INTO study_notes (notes) VALUES
-("The capital of France is Paris. Water boils at 100 degrees Celsius. The largest planet is Jupiter.");
+CREATE TABLE flashcards (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    topic VARCHAR(100),
+    question TEXT,
+    answer TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
--- ✅ Insert sample flashcards (linked to note_id = 1)
-INSERT INTO flashcards (note_id, question, answer) VALUES
-(1, "What is the capital of France?", "Paris"),
-(1, "At what temperature does water boil (Celsius)?", "100"),
-(1, "Which is the largest planet?", "Jupiter");
+CREATE TABLE payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    stripe_session_id VARCHAR(255),
+    amount DECIMAL(8,2),
+    status VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
--- ✅ Query to see flashcards
-SELECT f.id, f.question, f.answer, f.is_correct, s.notes
-FROM flashcards f
-JOIN study_notes s ON f.note_id = s.id;
+CREATE INDEX idx_user_premium ON users(is_premium);
+CREATE INDEX idx_flashcards_user ON flashcards(user_id);
+CREATE INDEX idx_payments_user ON payments(user_id);
 
--- ✅ Query to update user response (marking correct/incorrect)
-UPDATE flashcards SET is_correct = TRUE WHERE id = 1;
-UPDATE flashcards SET is_correct = FALSE WHERE id = 2;
-UPDATE flashcards SET is_correct = TRUE WHERE id = 3;
-
-
--- ✅ Query to see updated flashcards with user responses
-SELECT * FROM flashcards;
--- ✅ Query to delete a study note and its associated flashcards
-
+ALTER TABLE users ADD COLUMN stripe_customer_id VARCHAR(255);

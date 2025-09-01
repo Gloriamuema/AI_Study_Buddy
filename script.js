@@ -1,55 +1,70 @@
-// script.js
+let stripe = Stripe("pk_test_your_stripe_publishable_key"); // Replace with your Stripe publishable key
 
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("flashcard-form");
-  const topicInput = document.getElementById("topic");
-  const flashcardsContainer = document.getElementById("flashcards");
+async function signup() {
+  const username = document.getElementById("signup-username").value;
+  const password = document.getElementById("signup-password").value;
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const topic = topicInput.value.trim();
-    if (!topic) return;
-
-    flashcardsContainer.innerHTML = "<p>Generating flashcards...</p>";
-
-    try {
-      const response = await fetch("http://127.0.0.1:5000/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ topic })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const flashcards = data.flashcards || [];
-
-      flashcardsContainer.innerHTML = ""; // Clear previous cards
-
-      flashcards.forEach(card => {
-        const cardDiv = document.createElement("div");
-        cardDiv.className = "flashcard";
-
-        cardDiv.innerHTML = `
-          <div class="front"><strong>Q:</strong> ${card.question}</div>
-          <div class="back"><strong>A:</strong> ${card.answer}</div>
-        `;
-
-        // Add simple flip effect
-        cardDiv.addEventListener("click", () => {
-          cardDiv.classList.toggle("flipped");
-        });
-
-        flashcardsContainer.appendChild(cardDiv);
-      });
-
-    } catch (err) {
-      console.error("Error fetching flashcards:", err);
-      flashcardsContainer.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-    }
+  const res = await fetch("http://localhost:5000/signup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
   });
-});
+
+  const data = await res.json();
+  alert(data.message || data.error);
+}
+
+async function login() {
+  const username = document.getElementById("login-username").value;
+  const password = document.getElementById("login-password").value;
+
+  const res = await fetch("http://localhost:5000/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ username, password })
+  });
+
+  const data = await res.json();
+  if (data.message) {
+    alert(data.message);
+    document.getElementById("auth").style.display = "none";
+    document.getElementById("flashcards-section").style.display = "block";
+  } else {
+    alert(data.error);
+  }
+}
+
+async function generateFlashcards() {
+  const topic = document.getElementById("topic").value;
+  const res = await fetch("http://localhost:5000/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ topic })
+  });
+
+  const data = await res.json();
+  const container = document.getElementById("flashcards");
+  container.innerHTML = "";
+  data.flashcards.forEach(fc => {
+    const div = document.createElement("div");
+    div.innerHTML = `<strong>Q:</strong> ${fc.question} <br> <strong>A:</strong> ${fc.answer}<hr>`;
+    container.appendChild(div);
+  });
+}
+
+async function checkout() {
+  const res = await fetch("http://localhost:5000/create-checkout-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include"
+  });
+
+  const data = await res.json();
+  if (data.id) {
+    stripe.redirectToCheckout({ sessionId: data.id });
+  } else {
+    alert(data.error);
+  }
+}
