@@ -1,113 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Study Buddy - Flashcards</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f7f8fc;
-      margin: 0;
-      padding: 0;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Study Buddy</title>
+<style>
+    body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 50px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    h2 { text-align: center; }
+    input[type="text"], input[type="password"], input[type="email"] {
+        width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #ccc;
     }
-    header {
-      background-color: #4CAF50;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      font-size: 24px;
-    }
-    .container {
-      max-width: 700px;
-      margin: 30px auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    input[type="text"] {
-      width: 80%;
-      padding: 10px;
-      margin-right: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      background-color: #4CAF50;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    .flashcard {
-      background-color: #e7f3ff;
-      padding: 15px;
-      margin-top: 15px;
-      border-radius: 5px;
-    }
-    .question {
-      font-weight: bold;
-    }
-    .answer {
-      margin-top: 5px;
-    }
-  </style>
+    button { padding: 10px 20px; margin-top: 10px; border: none; border-radius: 5px; background: #007bff; color: white; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .message { margin: 10px 0; color: red; text-align: center; }
+    ul { padding-left: 20px; }
+    li { margin: 5px 0; }
+    .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; cursor: pointer; }
+    .tab-content { display: none; }
+    .active { display: block; }
+</style>
 </head>
 <body>
-  <header>AI Study Buddy - Flashcards</header>
-  <div class="container">
-    <h3>Generate Flashcards</h3>
-    <input type="text" id="topic" placeholder="Enter a topic">
-    <button onclick="generateFlashcards()">Generate</button>
 
-    <div id="flashcards-container"></div>
-  </div>
+<div class="container">
+    <h2>AI Study Buddy</h2>
 
-  <script>
-    async function generateFlashcards() {
-      const topic = document.getElementById('topic').value.trim();
-      if (!topic) {
-        alert("Please enter a topic!");
-        return;
-      }
+    <div class="tabs">
+        <button onclick="showSection('register', this)">Register</button>
+        <button onclick="showSection('login', this)">Login</button>
+        <button onclick="showSection('dashboard', this)">Dashboard</button>
+    </div>
 
-      const container = document.getElementById('flashcards-container');
-      container.innerHTML = "Generating flashcards...";
+    <!-- Registration -->
+    <div id="register" class="tab-content">
+        <input type="text" id="reg_username" placeholder="Username">
+        <input type="password" id="reg_password" placeholder="Password">
+        <button onclick="registerUser()">Sign Up</button>
+        <div class="message" id="reg_message"></div>
+    </div>
 
-      try {
-        const res = await fetch('/generate', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({topic})
-        });
+    <!-- Login -->
+    <div id="login" class="tab-content">
+        <input type="text" id="login_username" placeholder="Username">
+        <input type="password" id="login_password" placeholder="Password">
+        <button onclick="loginUser()">Login</button>
+        <div class="message" id="login_message"></div>
+    </div>
 
-        const data = await res.json();
-        container.innerHTML = ""; // clear
+    <!-- Dashboard -->
+    <div id="dashboard" class="tab-content">
+        <input type="text" id="topic" placeholder="Enter a topic for flashcards">
+        <button onclick="generateFlashcards()">Generate Flashcards</button>
+        <div id="flashcards"></div>
+        <hr>
+        <button onclick="purchasePremium()">Buy Premium Access ($5)</button>
+        <div id="stripe-message"></div>
+    </div>
+</div>
 
-        if (data.flashcards && data.flashcards.length > 0) {
-          data.flashcards.forEach(fc => {
-            const cardDiv = document.createElement('div');
-            cardDiv.className = 'flashcard';
-            cardDiv.innerHTML = `
-              <div class="question">Q: ${fc.question}</div>
-              <div class="answer">A: ${fc.answer}</div>
-            `;
-            container.appendChild(cardDiv);
-          });
-        } else {
-          container.innerHTML = "<p>No flashcards generated. Try again.</p>";
-        }
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+let stripe = Stripe("YOUR_STRIPE_PUBLISHABLE_KEY"); // Replace with your Stripe public key
 
-      } catch (err) {
-        console.error(err);
-        container.innerHTML = "<p>Error generating flashcards.</p>";
-      }
+function showSection(id, btn) {
+    document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+async function registerUser() {
+    const username = document.getElementById('reg_username').value;
+    const password = document.getElementById('reg_password').value;
+    const res = await fetch("http://localhost:5000/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({username, password})
+    });
+    const data = await res.json();
+    document.getElementById('reg_message').innerText = data.message || data.error;
+}
+
+async function loginUser() {
+    const username = document.getElementById('login_username').value;
+    const password = document.getElementById('login_password').value;
+    const res = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({username, password})
+    });
+    const data = await res.json();
+    if (data.message) {
+        showSection('dashboard', document.querySelector('.tabs button:nth-child(3)'));
     }
-  </script>
+    document.getElementById('login_message').innerText = data.message || data.error;
+}
+
+async function generateFlashcards() {
+    const topic = document.getElementById('topic').value;
+    const res = await fetch("http://localhost:5000/generate", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({topic})
+    });
+    const data = await res.json();
+    let html = "<ul>";
+    data.flashcards.forEach(card => {
+        html += `<li><b>${card.question}</b>: ${card.answer}</li>`;
+    });
+    html += "</ul>";
+    document.getElementById('flashcards').innerHTML = html;
+}
+
+async function purchasePremium() {
+    const res = await fetch("http://localhost:5000/create-checkout-session", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({amount: 500, currency: "usd", success_url: window.location.href, cancel_url: window.location.href})
+    });
+    const data = await res.json();
+    if (data.id) {
+        stripe.redirectToCheckout({ sessionId: data.id });
+    } else {
+        document.getElementById('stripe-message').innerText = data.error || "Stripe error";
+    }
+}
+
+// Show register tab by default
+showSection('register');
+</script>
+
 </body>
 </html>

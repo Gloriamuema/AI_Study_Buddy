@@ -1,7 +1,8 @@
 Flask
-flask-cors
-flask-bcrypt
-python-dotenv
-requests
+Flask-Cors
+Flask-Bcrypt
 mysql-connector-python
+requests
 stripe
+python-dotenv
+

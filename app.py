@@ -1,5 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv()  # Load variables from .env file
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
@@ -17,16 +15,15 @@ bcrypt = Bcrypt(app)
 # ----------------------
 # Environment Variables
 # ----------------------
-HF_TOKEN = os.getenv("HF_TOKEN")
-STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
-STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+HF_API_URL = "https://api-inference.huggingface.co/models/EleutherAI/gpt-neo-125M"
+HF_TOKEN = os.getenv("HF_TOKEN")  # Hugging Face token
+STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")  # Stripe secret key
+stripe.api_key = STRIPE_API_KEY
 
 if not HF_TOKEN:
-    raise ValueError("HF_TOKEN environment variable not set!")
-if not STRIPE_API_KEY:
-    raise ValueError("STRIPE_API_KEY environment variable not set!")
-if not STRIPE_WEBHOOK_SECRET:
-    raise ValueError("STRIPE_WEBHOOK_SECRET environment variable not set!")
+    raise ValueError("HF_TOKEN not set in environment!")
+
+headers = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 # ----------------------
 # MySQL Configuration
@@ -45,8 +42,8 @@ cursor = db.cursor(dictionary=True)
 @app.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
-    username = data.get("username", "").strip()
-    password = data.get("password", "").strip()
+    username = data.get("username").strip()
+    password = data.get("password").strip()
 
     if not username or not password:
         return jsonify({"error": "Username and password required"}), 400
@@ -58,14 +55,12 @@ def register():
         return jsonify({"message": "User registered successfully"})
     except mysql.connector.IntegrityError:
         return jsonify({"error": "Username already exists"}), 400
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    username = data.get("username", "").strip()
-    password = data.get("password", "").strip()
+    username = data.get("username").strip()
+    password = data.get("password").strip()
 
     cursor.execute("SELECT * FROM users WHERE username=%s", (username,))
     user = cursor.fetchone()
@@ -76,33 +71,25 @@ def login():
         return jsonify({"error": "Invalid username or password"}), 401
 
 # ----------------------
-# Flashcard Generation
+# Flashcard Generation (Accessible to all users)
 # ----------------------
 @app.route("/generate", methods=["POST"])
 def generate_flashcards():
     data = request.get_json()
     topic = data.get("topic", "").strip()
-    username = data.get("username", "").strip()  # basic auth for simplicity
-
-    # Check if user exists
-    cursor.execute("SELECT * FROM users WHERE username=%s", (username,))
-    user = cursor.fetchone()
-    if not user:
-        return jsonify({"error": "User not logged in"}), 401
 
     if not topic:
         return jsonify({"error": "No topic provided"}), 400
 
     prompt = f"""
     Generate 5 concise flashcards about {topic}.
-    Format as JSON like:
+    Format your output as JSON like:
     [
         {{"question": "question1", "answer": "answer1"}},
         {{"question": "question2", "answer": "answer2"}},
         ...
     ]
     """
-
     try:
         payload = {"inputs": prompt}
         response = requests.post(HF_API_URL, headers=headers, json=payload, timeout=60)
@@ -131,14 +118,13 @@ def generate_flashcards():
         return jsonify({"flashcards": flashcards, "error": str(e)})
 
 # ----------------------
-# Stripe Payment Endpoint
+# Stripe Payment
 # ----------------------
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.get_json()
-    amount = data.get("amount", 500)  # default $5
+    amount = data.get("amount", 500)  # $5 default
     currency = data.get("currency", "usd")
-
     try:
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -159,16 +145,7 @@ def create_checkout_session():
         return jsonify({"error": str(e)}), 500
 
 # ----------------------
-# Test route
-# ----------------------
-@app.route("/")
-def home():
-    return "AI Study Buddy API running!"
-
-# ----------------------
-# Run Flask App
+# Run Server
 # ----------------------
 if __name__ == "__main__":
     app.run(debug=True)
-# Test.py
-# Register
