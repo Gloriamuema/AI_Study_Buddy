@@ -1,66 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Study Buddy</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Study Buddy</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #74ebd5, #9face6);
+      color: #333;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    .page-wrapper {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      color: #fff;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+    }
+
+    form {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    input {
+      padding: 0.8rem 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      flex: 1;
+      min-width: 200px;
+      outline: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    button {
+      padding: 0.8rem 1.2rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: #4a90e2;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #357ABD;
+      transform: scale(1.05);
+    }
+
+    #flashcards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    /* Flip card container */
+    .flashcard {
+      perspective: 1000px;
+    }
+
+    .flashcard-inner {
+      position: relative;
+      width: 100%;
+      height: 150px;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      cursor: pointer;
+    }
+
+    .flashcard:hover .flashcard-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-front,
+    .flashcard-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+      font-size: 1rem;
+      word-wrap: break-word;
+    }
+
+    .flashcard-front {
+      background: #fff;
+      color: #333;
+    }
+
+    .flashcard-back {
+      background: #4a90e2;
+      color: #fff;
+      transform: rotateY(180deg);
+    }
+
+    #flashcards p.loading {
+      text-align: center;
+      font-style: italic;
+      color: #444;
+    }
+
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1 class="gradient-text">AI Study Buddy</h1>
-            <p>Transform your notes into interactive flashcards</p>
-        </header>
+  <div class="page-wrapper">
+    <h1>AI Study Buddy</h1>
 
-        <!-- Input Section -->
-        <section id="input-section" class="section">
-            <div class="card">
-                <h2>Paste Your Study Notes</h2>
-                <textarea id="study-notes" placeholder="Enter your study material here..."></textarea>
-                <button id="generate-btn" class="primary-btn">
-                    <span class="btn-text">Generate Flashcards</span>
-                    <span class="loader hidden">Generating...</span>
-                </button>
-            </div>
-        </section>
+    <form id="flashcard-form">
+      <input type="text" id="topic" placeholder="Enter a topic (e.g. SQL, Python, Networking)" required />
+      <button type="submit">Generate Flashcards</button>
+    </form>
 
-        <!-- Flashcard Section -->
-        <section id="flashcard-section" class="section hidden">
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
-            
-            <div class="flashcard-container">
-                <div class="flashcard" id="current-flashcard">
-                    <div class="flashcard-inner">
-                        <div class="flashcard-front">
-                            <div class="question-marker">Q</div>
-                            <h3 id="question-text"></h3>
-                            <p>Click to reveal answer</p>
-                        </div>
-                        <div class="flashcard-back">
-                            <div class="answer-marker">A</div>
-                            <p id="answer-text"></p>
-                            <div class="action-buttons">
-                                <button class="incorrect-btn">Incorrect</button>
-                                <button class="correct-btn">Correct</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div id="flashcards"></div>
+  </div>
 
-            <div class="navigation">
-                <button id="prev-btn">Previous</button>
-                <span id="card-counter">1 / 5</span>
-                <button id="next-btn">Next</button>
-            </div>
-        </section>
-    </div>
-
-    <script src="script.js"></script>
-
-    
+  <script src="script.js"></script>
 </body>
 </html>
