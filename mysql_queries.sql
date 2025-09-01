@@ -1,47 +1,45 @@
--- Create database
-CREATE DATABASE ai_study_buddy;
+-- Create the database
+CREATE DATABASE IF NOT EXISTS ai_study_buddy;
 USE ai_study_buddy;
 
--- Users table
-CREATE TABLE users (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(255) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+-- Table for storing user notes
+CREATE TABLE IF NOT EXISTS study_notes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    notes TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Study sessions table
-CREATE TABLE study_sessions (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT,
-    title VARCHAR(255) NOT NULL,
-    original_notes TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
-
--- Flashcards table
-CREATE TABLE flashcards (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    session_id INT,
+-- Table for storing generated flashcards
+CREATE TABLE IF NOT EXISTS flashcards (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    note_id INT,                          -- link flashcard to study_notes
     question TEXT NOT NULL,
     answer TEXT NOT NULL,
-    difficulty_level INT DEFAULT 1,
-    times_reviewed INT DEFAULT 0,
-    times_correct INT DEFAULT 0,
+    is_correct BOOLEAN DEFAULT NULL,      -- track if user answered correctly
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (session_id) REFERENCES study_sessions(id)
+    FOREIGN KEY (note_id) REFERENCES study_notes(id) ON DELETE CASCADE
 );
 
--- Study progress table
-CREATE TABLE study_progress (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT,
-    flashcard_id INT,
-    is_correct BOOLEAN,
-    reviewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (flashcard_id) REFERENCES flashcards(id)
-);
+-- ✅ Insert sample study notes
+INSERT INTO study_notes (notes) VALUES
+("The capital of France is Paris. Water boils at 100 degrees Celsius. The largest planet is Jupiter.");
+
+-- ✅ Insert sample flashcards (linked to note_id = 1)
+INSERT INTO flashcards (note_id, question, answer) VALUES
+(1, "What is the capital of France?", "Paris"),
+(1, "At what temperature does water boil (Celsius)?", "100"),
+(1, "Which is the largest planet?", "Jupiter");
+
+-- ✅ Query to see flashcards
+SELECT f.id, f.question, f.answer, f.is_correct, s.notes
+FROM flashcards f
+JOIN study_notes s ON f.note_id = s.id;
+
+-- ✅ Query to update user response (marking correct/incorrect)
+UPDATE flashcards SET is_correct = TRUE WHERE id = 1;
+UPDATE flashcards SET is_correct = FALSE WHERE id = 2;
+UPDATE flashcards SET is_correct = TRUE WHERE id = 3;
+-- ✅ Query to see updated flashcards with user responses
+SELECT * FROM flashcards;
+-- ✅ Query to delete a study note and its associated flashcards
 
