@@ -5,12 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Study Buddy</title>
   <style>
-    /* Reset */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: "Segoe UI", Arial, sans-serif;
@@ -28,7 +23,7 @@
     h1 {
       text-align: center;
       font-size: 2.5rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
       color: #fff;
       text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
     }
@@ -39,6 +34,7 @@
       align-items: center;
       gap: 10px;
       margin-bottom: 2rem;
+      flex-wrap: wrap;
     }
 
     input {
@@ -47,7 +43,7 @@
       border-radius: 8px;
       border: none;
       flex: 1;
-      max-width: 400px;
+      min-width: 200px;
       outline: none;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
@@ -76,42 +72,72 @@
       margin-top: 2rem;
     }
 
+    /* Flip card container */
     .flashcard {
-      background: #fff;
-      padding: 1.5rem;
+      perspective: 1000px;
+    }
+
+    .flashcard-inner {
+      position: relative;
+      width: 100%;
+      height: 150px;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      cursor: pointer;
+    }
+
+    .flashcard:hover .flashcard-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-front,
+    .flashcard-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
       border-radius: 12px;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
       box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .flashcard:hover {
-      transform: translateY(-5px);
-      box-shadow: 0px 6px 12px rgba(0,0,0,0.2);
-    }
-
-    .flashcard p {
-      margin: 0.5rem 0;
       font-size: 1rem;
+      word-wrap: break-word;
     }
 
-    .flashcard strong {
-      color: #4a90e2;
+    .flashcard-front {
+      background: #fff;
+      color: #333;
     }
+
+    .flashcard-back {
+      background: #4a90e2;
+      color: #fff;
+      transform: rotateY(180deg);
+    }
+
+    #flashcards p.loading {
+      text-align: center;
+      font-style: italic;
+      color: #444;
+    }
+
   </style>
 </head>
 <body>
-    <div class="page-wrapper"></div>
-  <h1>AI Study Buddy</h1>
+  <div class="page-wrapper">
+    <h1>AI Study Buddy</h1>
 
-  <form id="flashcard-form">
-    <input type="text" id="topic" placeholder="Enter a topic (e.g. SQL, Python, Networking)" required />
-    <button type="submit">Generate Flashcards</button>
-  </form>
+    <form id="flashcard-form">
+      <input type="text" id="topic" placeholder="Enter a topic (e.g. SQL, Python, Networking)" required />
+      <button type="submit">Generate Flashcards</button>
+    </form>
 
-  <div id="flashcards"></div>
-  
+    <div id="flashcards"></div>
+  </div>
 
-  <!-- Link to your updated script -->
   <script src="script.js"></script>
 </body>
 </html>

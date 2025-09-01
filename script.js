@@ -1,44 +1,55 @@
+// script.js
+
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("flashcard-form");
   const topicInput = document.getElementById("topic");
-  const flashcardsDiv = document.getElementById("flashcards");
+  const flashcardsContainer = document.getElementById("flashcards");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const topic = topicInput.value.trim();
     if (!topic) return;
 
-    flashcardsDiv.innerHTML = "<p>Generating flashcards...</p>";
+    flashcardsContainer.innerHTML = "<p>Generating flashcards...</p>";
 
     try {
       const response = await fetch("http://127.0.0.1:5000/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic }),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ topic })
       });
 
-      const data = await response.json();
-
-      if (data.error) {
-        flashcardsDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
-        return;
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
       }
 
-      const cards = data.flashcards || [];
-      flashcardsDiv.innerHTML = "";
+      const data = await response.json();
+      const flashcards = data.flashcards || [];
 
-      cards.forEach((card) => {
+      flashcardsContainer.innerHTML = ""; // Clear previous cards
+
+      flashcards.forEach(card => {
         const cardDiv = document.createElement("div");
         cardDiv.className = "flashcard";
+
         cardDiv.innerHTML = `
-          <p><strong>Q:</strong> ${card.question}</p>
-          <p><strong>A:</strong> ${card.answer}</p>
+          <div class="front"><strong>Q:</strong> ${card.question}</div>
+          <div class="back"><strong>A:</strong> ${card.answer}</div>
         `;
-        flashcardsDiv.appendChild(cardDiv);
+
+        // Add simple flip effect
+        cardDiv.addEventListener("click", () => {
+          cardDiv.classList.toggle("flipped");
+        });
+
+        flashcardsContainer.appendChild(cardDiv);
       });
 
     } catch (err) {
-      flashcardsDiv.innerHTML = `<p style="color:red;">Network error: ${err}</p>`;
+      console.error("Error fetching flashcards:", err);
+      flashcardsContainer.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
     }
   });
 });
