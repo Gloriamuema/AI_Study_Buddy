@@ -1,43 +1,44 @@
-document.getElementById("flashcard-form").addEventListener("submit", async function (e) {
-    e.preventDefault();
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("flashcard-form");
+  const topicInput = document.getElementById("topic");
+  const flashcardsDiv = document.getElementById("flashcards");
 
-    const topic = document.getElementById("topic").value;
-    const responseDiv = document.getElementById("flashcards");
-    responseDiv.innerHTML = "<p>Generating flashcards...</p>";
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const topic = topicInput.value.trim();
+    if (!topic) return;
+
+    flashcardsDiv.innerHTML = "<p>Generating flashcards...</p>";
 
     try {
-        const response = await fetch("http://127.0.0.1:5000/api/generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ topic: topic })
-        });
+      const response = await fetch("http://127.0.0.1:5000/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic }),
+      });
 
-        if (!response.ok) {
-            throw new Error("Failed to fetch flashcards from server.");
-        }
+      const data = await response.json();
 
-        const data = await response.json();
+      if (data.error) {
+        flashcardsDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+        return;
+      }
 
-        // Check if we actually got flashcards
-        if (!Array.isArray(data) || data.length === 0) {
-            responseDiv.innerHTML = "<p>No flashcards generated.</p>";
-            return;
-        }
+      const cards = data.flashcards || [];
+      flashcardsDiv.innerHTML = "";
 
-        // Render flashcards
-        responseDiv.innerHTML = "";
-        data.forEach((card, index) => {
-            const cardDiv = document.createElement("div");
-            cardDiv.classList.add("flashcard");
-            cardDiv.innerHTML = `
-                <p><strong>Q${index + 1}:</strong> ${card.question}</p>
-                <p><em>Answer:</em> ${card.answer}</p>
-            `;
-            responseDiv.appendChild(cardDiv);
-        });
+      cards.forEach((card) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "flashcard";
+        cardDiv.innerHTML = `
+          <p><strong>Q:</strong> ${card.question}</p>
+          <p><strong>A:</strong> ${card.answer}</p>
+        `;
+        flashcardsDiv.appendChild(cardDiv);
+      });
 
-    } catch (error) {
-        console.error("Error:", error);
-        responseDiv.innerHTML = "<p>Error generating flashcards. Please try again.</p>";
+    } catch (err) {
+      flashcardsDiv.innerHTML = `<p style="color:red;">Network error: ${err}</p>`;
     }
+  });
 });
