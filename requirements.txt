@@ -1,4 +1,8 @@
-flask==3.0.3
-flask-cors==4.0.0
-requests==2.32.3
-mysql-connector-python==9.0.0
+Flask
+Flask-Cors
+Flask-Bcrypt
+mysql-connector-python
+requests
+stripe
+python-dotenv
+

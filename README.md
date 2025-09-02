@@ -8,6 +8,22 @@ It uses **Flask + MySQL** on the backend and supports features like user account
 
 ---
 
+AI_Study_Buddy/
+│
+├── app.py                 # Main Flask app
+├── models.py              # Database models
+├── requirements.txt       # Python dependencies
+├── config.py              # Config (DB, Hugging Face, Stripe keys)
+├── static/
+│   ├── style.css          # CSS for frontend
+│   └── script.js          # JS for frontend
+├── templates/
+│   ├── login.html
+│   ├── register.html
+│   └── dashboard.html
+└── README.md
+
+
 ## 🚀 Features
 - User registration and login with secure password hashing
 - Create study sessions from raw notes

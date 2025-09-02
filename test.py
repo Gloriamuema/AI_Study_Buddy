@@ -1,12 +1,9 @@
-import os
-import requests
+# Register
+curl -X POST http://127.0.0.1:5000/register \
+-H "Content-Type: application/json" \
+-d '{"username":"testuser","password":"1234"}'
 
-HF_TOKEN = os.getenv("HF_TOKEN")
-HF_API_URL = "https://api-inference.huggingface.co/models/EleutherAI/gpt-neo-125M"
-headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-
-payload = {"inputs": "Generate 1 short flashcard about Python."}
-
-response = requests.post(HF_API_URL, headers=headers, json=payload, timeout=30)
-print(response.status_code)
-print(response.json())
+# Login
+curl -X POST http://127.0.0.1:5000/login \
+-H "Content-Type: application/json" \
+-d '{"username":"testuser","password":"1234"}'
